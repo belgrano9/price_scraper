@@ -2,6 +2,10 @@
 
 A web scraping project designed to extract train ticket prices from SNCF's website while bypassing DataDome anti-bot protection.
 
+> **⚠️ EDUCATIONAL PURPOSES ONLY**
+>
+> This project is intended solely for educational and research purposes to understand web scraping techniques and anti-bot detection mechanisms. Users must comply with all applicable laws and terms of service.
+
 ## Overview
 
 This project aims to scrape train ticket prices from the SNCF (French National Railway Company) website. The main challenge is defeating DataDome, a sophisticated bot detection and mitigation service that protects the SNCF website.
