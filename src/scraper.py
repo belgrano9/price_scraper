@@ -14,24 +14,38 @@ from typing import Dict, List, Optional
 from camoufox.sync_api import Camoufox
 
 from datadome import DataDomeBypass
+from datadome_advanced import AdvancedDataDomeBypass
 from parser import PriceParser
 
 
 class SNCFScraper:
     """Main scraper class for SNCF train ticket prices."""
 
-    def __init__(self, headless: bool = False, debug: bool = False):
+    def __init__(self, headless: bool = False, debug: bool = False, use_advanced: bool = True,
+                 session_name: str = "default", proxy: Optional[str] = None):
         """
         Initialize the SNCF scraper.
 
         Args:
             headless: Run browser in headless mode (not recommended for DataDome)
             debug: Enable debug logging
+            use_advanced: Use advanced DataDome bypass techniques (recommended)
+            session_name: Name for session persistence
+            proxy: Proxy server URL (e.g., "http://proxy:port")
         """
         self.base_url = "https://www.sncf-connect.com"
         self.headless = headless
         self.debug = debug
-        self.datadome_bypass = DataDomeBypass()
+        self.use_advanced = use_advanced
+        self.session_name = session_name
+        self.proxy = proxy
+
+        # Choose bypass strategy
+        if use_advanced:
+            self.datadome_bypass = AdvancedDataDomeBypass()
+        else:
+            self.datadome_bypass = DataDomeBypass()
+
         self.parser = PriceParser()
         self.results = []
 
@@ -48,29 +62,40 @@ class SNCFScraper:
 
     def initialize_browser(self) -> Camoufox:
         """
-        Initialize Camoufox browser with anti-detection settings.
+        Initialize Camoufox browser with advanced anti-detection settings.
 
         Returns:
             Configured Camoufox browser instance
         """
-        self.log("Initializing Camoufox browser...")
+        self.log("🚀 Initializing Camoufox browser with advanced stealth...")
 
         # Get stealth configuration
-        config = self.datadome_bypass.get_stealth_config()
+        if self.use_advanced:
+            config = self.datadome_bypass.get_advanced_stealth_config()
+        else:
+            config = self.datadome_bypass.get_stealth_config()
+
+        # Build browser arguments
+        browser_args = {
+            "headless": self.headless,
+            "humanize": config.get("humanize", True),
+            "geoip": config.get("geoip", True),
+        }
+
+        # Add proxy if configured
+        if self.proxy:
+            browser_args["proxy"] = {"server": self.proxy}
+            self.log(f"  Using proxy: {self.proxy}")
 
         # Initialize browser with anti-detection features
-        browser = Camoufox(
-            headless=self.headless,
-            humanize=config.get("humanize", True),
-            geoip=config.get("geoip", True),
-        )
+        browser = Camoufox(**browser_args)
 
-        self.log("Browser initialized successfully")
+        self.log("✓ Browser initialized successfully")
         return browser
 
     def navigate_to_homepage(self, page) -> bool:
         """
-        Navigate to SNCF Connect homepage.
+        Navigate to SNCF Connect homepage with advanced anti-detection.
 
         Args:
             page: Camoufox page object
@@ -79,29 +104,58 @@ class SNCFScraper:
             True if navigation successful
         """
         try:
-            self.log(f"Navigating to {self.base_url}...")
+            self.log(f"🌐 Navigating to {self.base_url}...")
+
+            # Inject fingerprint spoofing (advanced mode only)
+            if self.use_advanced:
+                self.log("  Injecting fingerprint spoofing scripts...")
+                self.datadome_bypass.inject_fingerprint_spoofing(page)
+
+            # Try to load cookies from previous session
+            if self.use_advanced:
+                if self.datadome_bypass.load_cookies(page, self.session_name):
+                    self.log("  Loaded cookies from previous session")
 
             # Add realistic headers
-            self.datadome_bypass.add_realistic_headers(page)
+            if self.use_advanced:
+                headers = self.datadome_bypass.get_realistic_headers()
+                page.set_extra_http_headers(headers)
+            else:
+                self.datadome_bypass.add_realistic_headers(page)
+
+            # Set randomized viewport (advanced mode only)
+            if self.use_advanced:
+                viewport = self.datadome_bypass.randomize_viewport()
+                page.set_viewport_size(viewport)
+                self.log(f"  Viewport: {viewport['width']}x{viewport['height']}")
 
             # Navigate to homepage
             page.goto(self.base_url, wait_until="domcontentloaded", timeout=30000)
 
             # Wait for page to load and check for DataDome
             if not self.datadome_bypass.wait_for_page_load(page):
-                self.log("Failed to bypass DataDome on homepage")
+                self.log("✗ Failed to bypass DataDome on homepage")
                 return False
 
             # Simulate human behavior
-            self.datadome_bypass.random_delay(2, 4)
-            self.datadome_bypass.human_like_mouse_movement(page)
-            self.datadome_bypass.random_scroll(page)
+            if self.use_advanced:
+                self.datadome_bypass.gaussian_delay(2, 4)
+                self.datadome_bypass.human_like_mouse_movement(page)
+                self.datadome_bypass.random_scroll_with_inertia(page)
+            else:
+                self.datadome_bypass.random_delay(2, 4)
+                self.datadome_bypass.human_like_mouse_movement(page)
+                self.datadome_bypass.random_scroll(page)
 
-            self.log("Successfully loaded homepage")
+            # Save cookies for future sessions
+            if self.use_advanced:
+                self.datadome_bypass.save_cookies(page, self.session_name)
+
+            self.log("✓ Successfully loaded homepage")
             return True
 
         except Exception as e:
-            self.log(f"Error navigating to homepage: {e}")
+            self.log(f"✗ Error navigating to homepage: {e}")
             return False
 
     def search_route(
@@ -136,32 +190,64 @@ class SNCFScraper:
             origin_input = page.query_selector("input[placeholder*='Départ'], input[placeholder*='départ'], input[name='origin']")
             if origin_input:
                 origin_input.click()
-                self.datadome_bypass.random_delay(0.5, 1)
-                origin_input.fill(origin)
-                self.datadome_bypass.random_delay(1, 2)
+                if self.use_advanced:
+                    self.datadome_bypass.gaussian_delay(0.5, 1)
+                    # Type character by character with realistic timing
+                    for char in origin:
+                        page.keyboard.type(char)
+                        time.sleep(self.datadome_bypass.human_typing_delay())
+                else:
+                    self.datadome_bypass.random_delay(0.5, 1)
+                    origin_input.fill(origin)
+
+                if self.use_advanced:
+                    self.datadome_bypass.gaussian_delay(1, 2)
+                else:
+                    self.datadome_bypass.random_delay(1, 2)
 
                 # Wait for autocomplete and select first option
                 page.wait_for_selector("li[role='option'], .autocomplete-item", timeout=5000)
-                self.datadome_bypass.random_delay(0.5, 1)
+                if self.use_advanced:
+                    self.datadome_bypass.gaussian_delay(0.5, 1)
+                else:
+                    self.datadome_bypass.random_delay(0.5, 1)
                 page.keyboard.press("ArrowDown")
-                self.datadome_bypass.random_delay(0.3, 0.6)
+                time.sleep(self.datadome_bypass.human_typing_delay() if self.use_advanced else random.uniform(0.3, 0.6))
                 page.keyboard.press("Enter")
 
             # Fill destination
             self.log("Filling destination field...")
-            self.datadome_bypass.random_delay(1, 2)
+            if self.use_advanced:
+                self.datadome_bypass.gaussian_delay(1, 2)
+            else:
+                self.datadome_bypass.random_delay(1, 2)
+
             dest_input = page.query_selector("input[placeholder*='Arrivée'], input[placeholder*='arrivée'], input[name='destination']")
             if dest_input:
                 dest_input.click()
-                self.datadome_bypass.random_delay(0.5, 1)
-                dest_input.fill(destination)
-                self.datadome_bypass.random_delay(1, 2)
+                if self.use_advanced:
+                    self.datadome_bypass.gaussian_delay(0.5, 1)
+                    # Type character by character with realistic timing
+                    for char in destination:
+                        page.keyboard.type(char)
+                        time.sleep(self.datadome_bypass.human_typing_delay())
+                else:
+                    self.datadome_bypass.random_delay(0.5, 1)
+                    dest_input.fill(destination)
+
+                if self.use_advanced:
+                    self.datadome_bypass.gaussian_delay(1, 2)
+                else:
+                    self.datadome_bypass.random_delay(1, 2)
 
                 # Wait for autocomplete and select first option
                 page.wait_for_selector("li[role='option'], .autocomplete-item", timeout=5000)
-                self.datadome_bypass.random_delay(0.5, 1)
+                if self.use_advanced:
+                    self.datadome_bypass.gaussian_delay(0.5, 1)
+                else:
+                    self.datadome_bypass.random_delay(0.5, 1)
                 page.keyboard.press("ArrowDown")
-                self.datadome_bypass.random_delay(0.3, 0.6)
+                time.sleep(self.datadome_bypass.human_typing_delay() if self.use_advanced else random.uniform(0.3, 0.6))
                 page.keyboard.press("Enter")
 
             # Fill date if date picker is available
