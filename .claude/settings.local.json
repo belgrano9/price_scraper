@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(iconv:*)",
+      "Bash(README_temp.md)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nAdd comprehensive project documentation and gitignore\n\nCreated detailed README explaining the SNCF price scraping project with DataDome bypass using Camoufox, and added comprehensive .gitignore covering Python, scraping artifacts, credentials, and IDE files.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git commit:*)",
+      "Bash(git fetch:*)",
+      "Bash(uv add:*)",
+      "Bash(uv run:*)",
+      "Bash(uv pip install:*)",
+      "Bash(findstr:*)",
+      "Bash(timeout /t 30)",
+      "Bash(if exist datasessionsdefault_cookies.json del datasessionsdefault_cookies.json)",
+      "Bash(dir:*)",
+      "Bash(Get-ChildItem -Recurse -File)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(uv sync:*)",
+      "Bash(rm:*)",
+      "Bash(curl:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
